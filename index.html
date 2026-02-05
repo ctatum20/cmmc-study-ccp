@@ -297,22 +297,57 @@ const assetSortItems = [
 ];
 
 const quizQuestions = [
-    {q:"Who is the CUI Executive Agent?",opts:["DoD","DHS","NARA","OMB"],correct:2,expl:"NARA serves as Executive Agent per EO 13556."},
-    {q:"DFARS 252.204-7012 requires incident reporting within:",opts:["24 hours","48 hours","72 hours","7 days"],correct:2,expl:"Cyber incidents must be reported to DC3 within 72 hours."},
-    {q:"How many CMMC Level 1 practices?",opts:["15","17","20","110"],correct:1,expl:"17 practices from FAR 52.204-21's 15 requirements."},
-    {q:"Maximum conditional certification duration:",opts:["90 days","120 days","180 days","365 days"],correct:2,expl:"Conditional valid max 180 days for POA&M remediation."},
-    {q:"Which level requires FINAL status for award?",opts:["Level 1 only","Level 2 only","Levels 2 and 3","All levels"],correct:0,expl:"Level 1 requires FINAL. Levels 2/3 allow Conditional."},
-    {q:"Assessment methods include all EXCEPT:",opts:["Examine","Interview","Test","Audit"],correct:3,expl:"Three methods: Examine, Interview, Test."},
-    {q:"Failed test during assessment results in:",opts:["POA&M item","Automatic NOT MET","Retry opportunity","Lead Assessor discretion"],correct:1,expl:"Failed test = automatic NOT MET for that practice."},
-    {q:"CUI Specified is marked with:",opts:["SECRET prefix","SP- prefix","CUI-S prefix","No special marking"],correct:1,expl:"CUI Specified uses SP- prefix (e.g., SP-EXPT)."},
-    {q:"Security Protection Assets are:",opts:["Out of scope","In scope, not assessed","In scope, assessed","Only assessed if processing CUI"],correct:2,expl:"In scope and assessed against applicable practices."},
-    {q:"Who maintains the CUI Registry?",opts:["DoD","Cyber AB","NARA","NIST"],correct:2,expl:"NARA maintains the authoritative CUI Registry."},
-    {q:"Can a C3PAO guarantee certification?",opts:["Yes with conditions","Yes if qualified","No — prohibited","Only for Level 1"],correct:2,expl:"COPC prohibits guarantees of assessment results."},
-    {q:"Contractor Risk Managed Assets:",opts:["Out of scope","Fully assessed","Reviewed in SSP only","Cannot exist on same network"],correct:2,expl:"In scope but reviewed per CA.L2-3.12.4, not fully assessed."},
-    {q:"Where are self-assessment scores posted?",opts:["eMASS","SPRS","FedRAMP","Marketplace"],correct:1,expl:"SPRS (Supplier Performance Risk System)."},
-    {q:"CCP can lead Level 2 assessments:",opts:["True","False"],correct:1,expl:"CCP can participate but cannot lead. CCA leads Level 2."},
-    {q:"Cloud providers storing CUI must meet:",opts:["FedRAMP Low","FedRAMP Moderate","FedRAMP High","No requirement"],correct:1,expl:"FedRAMP Moderate (or equivalent) per DFARS 252.204-7012."}
+    {id:"q1", q:"Who is the CUI Executive Agent?",opts:["DoD","DHS","NARA","OMB"],correct:2,expl:"NARA serves as Executive Agent per EO 13556."},
+    {id:"q2", q:"DFARS 252.204-7012 requires incident reporting within:",opts:["24 hours","48 hours","72 hours","7 days"],correct:2,expl:"Cyber incidents must be reported to DC3 within 72 hours."},
+    {id:"q3", q:"How many CMMC Level 1 practices?",opts:["15","17","20","110"],correct:1,expl:"17 practices from FAR 52.204-21's 15 requirements."},
+    {id:"q4", q:"Maximum conditional certification duration:",opts:["90 days","120 days","180 days","365 days"],correct:2,expl:"Conditional valid max 180 days for POA&M remediation."},
+    {id:"q5", q:"Which level requires FINAL status for award?",opts:["Level 1 only","Level 2 only","Levels 2 and 3","All levels"],correct:0,expl:"Level 1 requires FINAL. Levels 2/3 allow Conditional."},
+    {id:"q6", q:"Assessment methods include all EXCEPT:",opts:["Examine","Interview","Test","Audit"],correct:3,expl:"Three methods: Examine, Interview, Test."},
+    {id:"q7", q:"Failed test during assessment results in:",opts:["POA&M item","Automatic NOT MET","Retry opportunity","Lead Assessor discretion"],correct:1,expl:"Failed test = automatic NOT MET for that practice."},
+    {id:"q8", q:"CUI Specified is marked with:",opts:["SECRET prefix","SP- prefix","CUI-S prefix","No special marking"],correct:1,expl:"CUI Specified uses SP- prefix (e.g., SP-EXPT)."},
+    {id:"q9", q:"Security Protection Assets are:",opts:["Out of scope","In scope, not assessed","In scope, assessed","Only assessed if processing CUI"],correct:2,expl:"In scope and assessed against applicable practices."},
+    {id:"q10", q:"Who maintains the CUI Registry?",opts:["DoD","Cyber AB","NARA","NIST"],correct:2,expl:"NARA maintains the authoritative CUI Registry."},
+    {id:"q11", q:"Can a C3PAO guarantee certification?",opts:["Yes with conditions","Yes if qualified","No — prohibited","Only for Level 1"],correct:2,expl:"COPC prohibits guarantees of assessment results."},
+    {id:"q12", q:"Contractor Risk Managed Assets:",opts:["Out of scope","Fully assessed","Reviewed in SSP only","Cannot exist on same network"],correct:2,expl:"In scope but reviewed per CA.L2-3.12.4, not fully assessed."},
+    {id:"q13", q:"Where are self-assessment scores posted?",opts:["eMASS","SPRS","FedRAMP","Marketplace"],correct:1,expl:"SPRS (Supplier Performance Risk System)."},
+    {id:"q14", q:"CCP can lead Level 2 assessments:",opts:["True","False"],correct:1,expl:"CCP can participate but cannot lead. CCA leads Level 2."},
+    {id:"q15", q:"Cloud providers storing CUI must meet:",opts:["FedRAMP Low","FedRAMP Moderate","FedRAMP High","No requirement"],correct:1,expl:"FedRAMP Moderate (or equivalent) per DFARS 252.204-7012."},
+    {id:"q16", q:"Executive Order 13556 established:",opts:["CMMC Program","CUI Program","FedRAMP","NIST 800-171"],correct:1,expl:"EO 13556 (2010) established the CUI Program with NARA as Executive Agent."},
+    {id:"q17", q:"32 CFR Part 170 establishes:",opts:["CUI Registry","CMMC Program requirements","FedRAMP baselines","NIST standards"],correct:1,expl:"32 CFR Part 170 is the CMMC Program rule."},
+    {id:"q18", q:"FCI is defined in:",opts:["DFARS 252.204-7012","FAR 4.1901","32 CFR 2002","EO 13556"],correct:1,expl:"Federal Contract Information is defined in FAR 4.1901."},
+    {id:"q19", q:"Specialized Assets include all EXCEPT:",opts:["Government Property","IoT devices","Firewalls","Test Equipment"],correct:2,expl:"Firewalls are Security Protection Assets. Specialized includes Gov Property, IoT, OT, Restricted Info Systems, Test Equipment."},
+    {id:"q20", q:"Out-of-Scope assets must be:",opts:["Documented in SSP","Physically or logically separated from CUI","Assessed annually","Approved by C3PAO"],correct:1,expl:"Out-of-Scope assets cannot process CUI because they are separated from CUI assets."},
+    {id:"q21", q:"The Cyber AB is responsible for:",opts:["Writing NIST standards","Accrediting C3PAOs","Issuing DFARS clauses","Managing FedRAMP"],correct:1,expl:"The Cyber AB accredits C3PAOs and manages the CMMC ecosystem."},
+    {id:"q22", q:"COPC stands for:",opts:["Code of Professional Conduct","Certificate of Process Compliance","Cybersecurity Operations Policy Council","Contractor Oversight Program Charter"],correct:0,expl:"Code of Professional Conduct governs ethics for CMMC professionals."},
+    {id:"q23", q:"Phase 2 of the CAP involves:",opts:["Planning the assessment","Conducting the assessment","Reporting results","POA&M closeout"],correct:1,expl:"Phase 2 is Conduct Assessment (examine, interview, test)."},
+    {id:"q24", q:"A practice scored NOT MET can go on POA&M if:",opts:["It's any practice","It meets qualifying criteria and minimum score achieved","The OSC requests it","The Lead Assessor approves"],correct:1,expl:"Only certain practices can go on POA&M, and OSC must meet minimum 80% score."},
+    {id:"q25", q:"NIST SP 800-171 contains how many security requirements?",opts:["17","110","320","53"],correct:1,expl:"NIST SP 800-171 has 110 requirements, mapped to CMMC Level 2."},
+    {id:"q26", q:"Who can serve on a Level 2 assessment team?",opts:["Only CCAs","Only CCPs","Both CCAs and CCPs","Any cybersecurity professional"],correct:2,expl:"Both can serve on L2 teams, but only CCAs can lead."},
+    {id:"q27", q:"CUI Basic uses controls from:",opts:["Agency-specific policies","32 CFR Part 2002 uniform standards","NIST SP 800-53 High","Classified handling procedures"],correct:1,expl:"CUI Basic uses uniform default controls from 32 CFR Part 2002."},
+    {id:"q28", q:"An RP who consulted for an OSC:",opts:["Can assess them after 1 year","Can assess them if disclosed","Cannot assess that OSC","Can assess only L1 practices"],correct:2,expl:"Prior consulting creates permanent COI — cannot assess that OSC."},
+    {id:"q29", q:"Evidence adequacy means:",opts:["Having enough evidence","Having the right type of evidence","Evidence is digitally signed","Evidence is under 1 year old"],correct:1,expl:"Adequacy = right evidence. Sufficiency = enough evidence."},
+    {id:"q30", q:"Level 1 assessment is:",opts:["Third-party only","Self-assessment with affirmation","Government-led","Optional"],correct:1,expl:"Level 1 is self-assessed annually with senior official affirmation in SPRS."}
 ];
+
+// Progress tracking
+function getProgress() {
+    try {
+        return JSON.parse(localStorage.getItem('ccpProgress')) || {};
+    } catch { return {}; }
+}
+function saveProgress(progress) {
+    try {
+        localStorage.setItem('ccpProgress', JSON.stringify(progress));
+    } catch {}
+}
+function getLearnedCount() {
+    const progress = getProgress();
+    return Object.values(progress).filter(p => p.correct >= 2).length;
+}
+function getLearningCount() {
+    const progress = getProgress();
+    return Object.values(progress).filter(p => p.correct > 0 && p.correct < 2).length;
+}
 
 // ========================
 // STATE
@@ -324,7 +359,7 @@ let practice = {idx:0, answered:false, score:0};
 let ethics = {idx:0, answered:false, score:0};
 let capOrder = {items:[], checked:false};
 let assetSort = {items:[], inScope:[], outScope:[], checked:false};
-let quiz = {qs:[], idx:0, score:0, answered:false, done:false, timer:null, time:0};
+let quiz = {qs:[], idx:0, score:0, answered:false, done:false, timer:null, time:0, setup:true, count:10};
 
 // ========================
 // RENDER
@@ -355,7 +390,7 @@ function setMode(m) {
     if(m==='Ethics') ethics = {idx:0, answered:false, score:0};
     if(m==='CAP Order') capOrder = {items: shuffle([...capSteps]), checked:false};
     if(m==='Scoping') assetSort = {items: shuffle([...assetSortItems]).slice(0,6), inScope:[], outScope:[], checked:false};
-    if(m==='Quiz') quiz = {qs: shuffle([...quizQuestions]).slice(0,10), idx:0, score:0, answered:false, done:false, timer:null, time:90};
+    if(m==='Quiz') quiz = {qs:[], idx:0, score:0, answered:false, done:false, timer:null, time:0, setup:true, count:10};
     render();
 }
 
@@ -724,6 +759,52 @@ function checkScoping() {
 
 // QUIZ
 function renderQuiz(c) {
+    // Setup screen
+    if(quiz.setup) {
+        const learned = getLearnedCount();
+        const learning = getLearningCount();
+        const total = quizQuestions.length;
+        c.innerHTML = `
+            <div class="mode-header"><span class="icon">⏱️</span> Timed Quiz</div>
+            <div style="max-width:400px;margin:0 auto;">
+                <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:15px;text-align:center;">Your Progress</h4>
+                    <div class="stats-row" style="margin:0;">
+                        <div class="stat">
+                            <div class="stat-value" style="color:var(--green);font-size:1.5rem;">${learned}</div>
+                            <div class="stat-label">Learned</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" style="color:var(--amber);font-size:1.5rem;">${learning}</div>
+                            <div class="stat-label">Learning</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" style="color:var(--dim);font-size:1.5rem;">${total - learned - learning}</div>
+                            <div class="stat-label">New</div>
+                        </div>
+                    </div>
+                </div>
+                <h4 style="margin-bottom:12px;text-align:center;">How many questions?</h4>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;">
+                    ${[10,15,20,25,30].map(n => `
+                        <button class="btn ${quiz.count===n?'':'btn-secondary'}" style="min-width:50px;" onclick="quiz.count=${n};render();">${n}</button>
+                    `).join('')}
+                </div>
+                <p style="font-size:0.8rem;color:var(--dim);text-align:center;margin-bottom:20px;">
+                    Questions you haven't mastered will appear first.<br>
+                    Get a question right 2x to mark it "Learned."
+                </p>
+                <div class="btn-row" style="margin-top:0;">
+                    <button class="btn" onclick="startQuiz()">Start Quiz</button>
+                </div>
+                ${learned > 0 ? `<div class="btn-row" style="margin-top:10px;">
+                    <button class="btn btn-secondary btn-small" onclick="if(confirm('Reset all progress?')){localStorage.removeItem('ccpProgress');render();}">Reset Progress</button>
+                </div>` : ''}
+            </div>`;
+        return;
+    }
+
+    // Results screen
     if(quiz.done) {
         const pct = Math.round((quiz.score / quiz.qs.length) * 100);
         c.innerHTML = `
@@ -732,6 +813,18 @@ function renderQuiz(c) {
                 <div class="score-big ${pct >= 70 ? 'pass' : 'fail'}">${pct}%</div>
                 <p style="color:var(--dim);">${quiz.score} of ${quiz.qs.length} correct</p>
                 <p style="color:var(--muted);font-size:0.85rem;margin-top:5px;">${quiz.time > 0 ? `Finished with ${quiz.time}s remaining` : 'Time expired'}</p>
+                <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:15px;margin:20px auto;max-width:300px;">
+                    <div class="stats-row" style="margin:0;">
+                        <div class="stat">
+                            <div class="stat-value" style="color:var(--green);font-size:1.3rem;">${getLearnedCount()}</div>
+                            <div class="stat-label">Learned</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" style="color:var(--amber);font-size:1.3rem;">${getLearningCount()}</div>
+                            <div class="stat-label">Learning</div>
+                        </div>
+                    </div>
+                </div>
                 <div class="btn-row" style="margin-top:25px;">
                     <button class="btn" onclick="setMode('Quiz')">Try Again</button>
                     <button class="btn btn-secondary" onclick="setMode('Flashcards')">Study More</button>
@@ -740,6 +833,7 @@ function renderQuiz(c) {
         return;
     }
     
+    // Start timer if needed
     if(!quiz.timer && quiz.time > 0) {
         quiz.timer = setInterval(() => {
             quiz.time--;
@@ -748,35 +842,87 @@ function renderQuiz(c) {
                 quiz.done = true;
                 render();
             } else {
-                document.getElementById('timer').textContent = formatTime(quiz.time);
-                document.getElementById('timer').className = 'timer' + (quiz.time <= 30 ? ' danger' : quiz.time <= 60 ? ' warning' : '');
+                const timerEl = document.getElementById('timer');
+                if(timerEl) {
+                    timerEl.textContent = formatTime(quiz.time);
+                    timerEl.className = 'timer' + (quiz.time <= 30 ? ' danger' : quiz.time <= 60 ? ' warning' : '');
+                }
             }
         }, 1000);
     }
     
-    const q = quiz.qs[quiz.idx];
+    const currentQ = quiz.qs[quiz.idx];
     c.innerHTML = `
         <div class="mode-header"><span class="icon">⏱️</span> Timed Quiz</div>
         <div class="timer" id="timer">${formatTime(quiz.time)}</div>
         <div class="progress"><div class="progress-fill" style="width:${(quiz.idx/quiz.qs.length)*100}%"></div></div>
         <p style="text-align:center;color:var(--muted);font-size:0.8rem;margin-bottom:15px;">Question ${quiz.idx + 1} of ${quiz.qs.length}</p>
-        <p style="font-size:1rem;font-weight:500;margin-bottom:18px;">${q.q}</p>
-        <div class="options">${q.opts.map((o,i) => `
-            <div class="option ${quiz.answered?'disabled':''} ${quiz.answered&&i===q.correct?'correct':''} ${quiz.answered&&quiz.sel===i&&i!==q.correct?'incorrect':''}" 
+        <p style="font-size:1rem;font-weight:500;margin-bottom:18px;">${currentQ.q}</p>
+        <div class="options">${currentQ.shuffledOpts.map((opt,i) => `
+            <div class="option ${quiz.answered?'disabled':''} ${quiz.answered&&i===currentQ.correctShuffled?'correct':''} ${quiz.answered&&quiz.sel===i&&i!==currentQ.correctShuffled?'incorrect':''}" 
                  onclick="${quiz.answered?'':`pickQuiz(${i})`}">
                 <span class="option-letter">${String.fromCharCode(65+i)}</span>
-                <span>${o}</span>
+                <span>${opt}</span>
             </div>`).join('')}
         </div>
-        ${quiz.answered ? `<div class="explanation"><h4>Explanation</h4><p>${q.expl}</p></div>
+        ${quiz.answered ? `<div class="explanation"><h4>Explanation</h4><p>${currentQ.expl}</p></div>
             <div class="btn-row"><button class="btn" onclick="nextQuiz()">${quiz.idx === quiz.qs.length - 1 ? 'See Results' : 'Next'}</button></div>` : ''}`;
+}
+
+function startQuiz() {
+    const progress = getProgress();
+    
+    // Sort questions: unlearned first, then by how close to learned
+    const sorted = [...quizQuestions].sort((a, b) => {
+        const aCorrect = progress[a.id]?.correct || 0;
+        const bCorrect = progress[b.id]?.correct || 0;
+        return aCorrect - bCorrect; // Lower correct count = higher priority
+    });
+    
+    // Take requested count, then shuffle so it's not predictable
+    const selected = shuffle(sorted.slice(0, Math.min(quiz.count, quizQuestions.length)));
+    
+    // Shuffle options for each question
+    quiz.qs = selected.map(q => {
+        const correctAnswer = q.opts[q.correct];
+        const shuffledOpts = shuffle([...q.opts]);
+        const correctShuffled = shuffledOpts.indexOf(correctAnswer);
+        return { ...q, shuffledOpts, correctShuffled };
+    });
+    
+    quiz.setup = false;
+    quiz.idx = 0;
+    quiz.score = 0;
+    quiz.answered = false;
+    quiz.done = false;
+    quiz.time = quiz.count * 9; // 9 seconds per question
+    quiz.timer = null;
+    render();
 }
 
 function pickQuiz(i) {
     if(quiz.answered) return;
     quiz.answered = true;
     quiz.sel = i;
-    if(i === quiz.qs[quiz.idx].correct) quiz.score++;
+    
+    const currentQ = quiz.qs[quiz.idx];
+    const isCorrect = i === currentQ.correctShuffled;
+    
+    if(isCorrect) {
+        quiz.score++;
+        // Update progress
+        const progress = getProgress();
+        if(!progress[currentQ.id]) progress[currentQ.id] = {correct: 0, attempts: 0};
+        progress[currentQ.id].correct++;
+        progress[currentQ.id].attempts++;
+        saveProgress(progress);
+    } else {
+        // Track attempts even when wrong
+        const progress = getProgress();
+        if(!progress[currentQ.id]) progress[currentQ.id] = {correct: 0, attempts: 0};
+        progress[currentQ.id].attempts++;
+        saveProgress(progress);
+    }
     render();
 }
 
