@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0c1829">
+    <meta name="description" content="Interactive study tool for the Certified CMMC Professional (CCP) exam">
+    <title>CCP Study Tool</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0c1829;
+            --card: #142236;
+            --card-hover: #1a2d47;
+            --border: #243654;
+            --accent: #3b82f6;
+            --accent-dim: #2563eb;
+            --teal: #14b8a6;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --green: #22c55e;
+            --purple: #a855f7;
+            --text: #e2e8f0;
+            --dim: #94a3b8;
+            --muted: #64748b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        
+        header { text-align: center; padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+        header h1 { font-size: 1.6rem; font-weight: 700; }
+        header h1 span { color: var(--accent); }
+        header p { color: var(--dim); font-size: 0.85rem; }
+        header .author { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+        header .author a { color: var(--accent); text-decoration: none; }
+        header .author a:hover { text-decoration: underline; }
+        
+        nav { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 20px; }
+        nav button {
+            background: var(--card); border: 1px solid var(--border); color: var(--dim);
+            padding: 8px 14px; border-radius: 6px; cursor: pointer; font-family: inherit;
+            font-size: 0.8rem; font-weight: 500; transition: all 0.15s;
+        }
+        nav button:hover { background: var(--card-hover); color: var(--text); }
+        nav button.active { background: var(--accent); border-color: var(--accent); color: white; }
+        
+        .content { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; min-height: 400px; }
+        .mode-header { font-size: 1.1rem; font-weight: 600; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+        .mode-header .icon { font-size: 1rem; }
+        
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 10px 22px;
+            border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.9rem;
+            font-weight: 500; transition: all 0.15s;
+        }
+        .btn:hover { background: var(--accent-dim); }
+        .btn:disabled { background: var(--muted); cursor: not-allowed; }
+        .btn-secondary { background: var(--bg); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--card-hover); }
+        .btn-small { padding: 6px 14px; font-size: 0.8rem; }
+        .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        
+        /* Flashcard */
+        .flashcard-container { perspective: 1000px; margin: 30px auto; max-width: 500px; }
+        .flashcard {
+            width: 100%; min-height: 220px; position: relative; cursor: pointer;
+            transform-style: preserve-3d; transition: transform 0.5s;
+        }
+        .flashcard.flipped { transform: rotateY(180deg); }
+        .flashcard-face {
+            position: absolute; width: 100%; min-height: 220px; backface-visibility: hidden;
+            background: var(--bg); border: 2px solid var(--border); border-radius: 12px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 25px; text-align: center;
+        }
+        .flashcard-back { transform: rotateY(180deg); }
+        .flashcard-front h3 { font-size: 1.1rem; color: var(--accent); margin-bottom: 8px; }
+        .flashcard-front .hint { font-size: 0.8rem; color: var(--muted); margin-top: 15px; }
+        .flashcard-back p { font-size: 0.95rem; color: var(--dim); line-height: 1.7; }
+        .flashcard-back .source { font-size: 0.75rem; color: var(--muted); margin-top: 12px; font-family: 'JetBrains Mono', monospace; }
+        .flashcard-progress { text-align: center; margin-bottom: 15px; color: var(--dim); font-size: 0.85rem; }
+        .flashcard-controls { display: flex; justify-content: center; gap: 12px; margin-top: 20px; }
+        .know-btn { background: var(--green); }
+        .know-btn:hover { background: #16a34a; }
+        .dunno-btn { background: var(--red); }
+        .dunno-btn:hover { background: #dc2626; }
+        
+        /* Matching Game */
+        .match-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .match-column h4 { font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .match-item {
+            background: var(--bg); border: 2px solid var(--border); border-radius: 8px;
+            padding: 12px 14px; margin-bottom: 8px; cursor: pointer; font-size: 0.88rem;
+            transition: all 0.15s; user-select: none;
+        }
+        .match-item:hover:not(.matched):not(.selected) { border-color: var(--accent); }
+        .match-item.selected { border-color: var(--accent); background: rgba(59,130,246,0.15); }
+        .match-item.matched { border-color: var(--green); background: rgba(34,197,94,0.1); opacity: 0.7; cursor: default; }
+        .match-item.wrong { animation: shake 0.4s; border-color: var(--red); }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+        .match-score { text-align: center; margin-bottom: 15px; font-size: 0.9rem; color: var(--dim); }
+        
+        /* Scenario Practice */
+        .scenario-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 18px; }
+        .scenario-label { font-size: 0.7rem; color: var(--amber); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .scenario-text { font-size: 0.95rem; line-height: 1.7; }
+        .options { display: grid; gap: 10px; margin: 18px 0; }
+        .option {
+            background: var(--bg); border: 2px solid var(--border); border-radius: 8px;
+            padding: 12px 14px; cursor: pointer; display: flex; align-items: flex-start;
+            gap: 10px; transition: all 0.15s; font-size: 0.9rem;
+        }
+        .option:hover:not(.disabled) { border-color: var(--accent); background: var(--card-hover); }
+        .option.correct { border-color: var(--green); background: rgba(34,197,94,0.1); }
+        .option.incorrect { border-color: var(--red); background: rgba(239,68,68,0.1); }
+        .option.disabled { cursor: default; }
+        .option-letter {
+            width: 24px; height: 24px; background: var(--card); border-radius: 5px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.75rem; flex-shrink: 0;
+        }
+        .option.correct .option-letter { background: var(--green); color: white; }
+        .option.incorrect .option-letter { background: var(--red); color: white; }
+        .explanation { background: var(--bg); border-left: 3px solid var(--teal); padding: 14px; border-radius: 0 8px 8px 0; margin: 15px 0; }
+        .explanation h4 { color: var(--teal); font-size: 0.8rem; margin-bottom: 5px; }
+        .explanation p { font-size: 0.85rem; color: var(--dim); }
+        
+        /* Asset Sorting Game */
+        .sort-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .sort-zone {
+            background: var(--bg); border: 2px dashed var(--border); border-radius: 10px;
+            padding: 15px; min-height: 150px; transition: all 0.2s;
+        }
+        .sort-zone.drag-over { border-color: var(--accent); background: rgba(59,130,246,0.05); }
+        .sort-zone h4 { font-size: 0.8rem; color: var(--muted); margin-bottom: 10px; text-align: center; }
+        .sort-zone.in-scope { border-color: var(--green); }
+        .sort-zone.in-scope h4 { color: var(--green); }
+        .sort-zone.out-scope { border-color: var(--red); }
+        .sort-zone.out-scope h4 { color: var(--red); }
+        .asset-item {
+            background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+            padding: 10px 12px; margin-bottom: 6px; cursor: grab; font-size: 0.85rem;
+            transition: all 0.15s;
+        }
+        .asset-item:hover { border-color: var(--accent); }
+        .asset-item.dragging { opacity: 0.5; }
+        .asset-item.correct { border-color: var(--green); background: rgba(34,197,94,0.1); }
+        .asset-item.wrong { border-color: var(--red); background: rgba(239,68,68,0.1); }
+        .asset-pool { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+        .asset-pool h4 { font-size: 0.8rem; color: var(--dim); margin-bottom: 10px; }
+        
+        /* Timer */
+        .timer { font-size: 1.8rem; font-weight: 700; color: var(--accent); text-align: center; margin-bottom: 15px; font-family: 'JetBrains Mono', monospace; }
+        .timer.warning { color: var(--amber); }
+        .timer.danger { color: var(--red); animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        
+        /* Progress bar */
+        .progress { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 15px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s; }
+        
+        /* Score display */
+        .score-big { font-size: 3rem; font-weight: 700; margin: 15px 0; }
+        .score-big.pass { color: var(--green); }
+        .score-big.fail { color: var(--red); }
+        
+        /* Stats */
+        .stats-row { display: flex; justify-content: center; gap: 30px; margin: 20px 0; flex-wrap: wrap; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+        .stat-label { font-size: 0.75rem; color: var(--muted); }
+        
+        /* CAP Ordering */
+        .order-list { max-width: 500px; margin: 0 auto; }
+        .order-item {
+            background: var(--bg); border: 2px solid var(--border); border-radius: 8px;
+            padding: 14px 16px; margin-bottom: 8px; cursor: grab; display: flex;
+            align-items: center; gap: 12px; transition: all 0.15s;
+        }
+        .order-item:hover { border-color: var(--accent); }
+        .order-item.dragging { opacity: 0.5; border-color: var(--accent); }
+        .order-item .num {
+            width: 28px; height: 28px; background: var(--card); border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.85rem; color: var(--dim);
+        }
+        .order-item.correct .num { background: var(--green); color: white; }
+        .order-item.wrong .num { background: var(--red); color: white; }
+        
+        /* Scrollable */
+        .scroll-area { max-height: 400px; overflow-y: auto; padding-right: 8px; }
+        .scroll-area::-webkit-scrollbar { width: 5px; }
+        .scroll-area::-webkit-scrollbar-track { background: var(--bg); }
+        .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        
+        @media (max-width: 600px) {
+            .container { padding: 12px; }
+            .match-container, .sort-container { grid-template-columns: 1fr; }
+            .flashcard-face { min-height: 180px; padding: 18px; }
+            nav button { padding: 6px 10px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1><span>CCP</span> Study Tool</h1>
+        <p>Interactive Exam Preparation</p>
+        <p class="author">Created by <a href="https://linkedin.com/in/charnice-tatum" target="_blank" rel="noopener">Charnice Tatum, CCP</a></p>
+    </header>
+    <nav id="nav"></nav>
+    <div class="content" id="content"></div>
+</div>
+
+<script>
+// ========================
+// DATA
+// ========================
+const MODES = ['Home','Flashcards','Matching','Practices','Ethics','CAP Order','Scoping','Quiz'];
+
+const flashcards = [
+    {front:"Federal Contract Information (FCI)", back:"Information not intended for public release, provided by or generated for the Government under contract. Excludes public info and simple transactional data.", source:"FAR 4.1901"},
+    {front:"Controlled Unclassified Information (CUI)", back:"Government-created or possessed information requiring safeguarding per law, regulation, or policy. NOT classified information.", source:"32 CFR 2002.4(h)"},
+    {front:"CUI Basic vs CUI Specified", back:"Basic = default uniform controls. Specified = additional controls mandated by authority, marked with SP- prefix (e.g., SP-EXPT).", source:"32 CFR Part 2002"},
+    {front:"Executive Order 13556", back:"Established the CUI program (2010) to replace ad hoc markings like SBU, FOUO. Designated NARA as Executive Agent.", source:"EO 13556"},
+    {front:"DFARS 252.204-7012", back:"Requires: adequate security per NIST SP 800-171, 72-hour cyber incident reporting to DC3, FedRAMP Moderate for cloud storing CUI.", source:"DFARS"},
+    {front:"FAR 52.204-21", back:"Basic Safeguarding clause — 15 requirements protecting FCI that map to 17 CMMC Level 1 practices. Self-assessed annually.", source:"FAR"},
+    {front:"C3PAO", back:"CMMC Third-Party Assessment Organization. Conducts Level 2 assessments. Must be Cyber AB accredited. Cannot consult for OSCs they assess.", source:"Ecosystem"},
+    {front:"CCP vs CCA", back:"CCP = Level 1 assessor (can participate on L2 teams). CCA = Level 2 assessor (leads L2 assessments). CCA requires passing both exams.", source:"Credentials"},
+    {front:"SPRS", back:"Supplier Performance Risk System. Where contractors post self-assessment scores. Contracting officers verify CMMC status here before award.", source:"DFARS 252.204-7019"},
+    {front:"180-Day Conditional", back:"Maximum duration for Conditional certification. OSC must remediate POA&M items within this window or lose certification.", source:"32 CFR Part 170"},
+    {front:"Security Protection Assets", back:"Assets providing security functions regardless of CUI processing (firewalls, SIEM). IN SCOPE and ASSESSED against applicable practices.", source:"Scoping Guide"},
+    {front:"Contractor Risk Managed Assets", back:"Capable of but NOT intended to process CUI due to policies. IN SCOPE but only reviewed per CA.L2-3.12.4, not fully assessed.", source:"Scoping Guide"},
+    {front:"Assessment Methods", back:"Examine (review artifacts), Interview (discussions with personnel), Test (exercise mechanisms). Failed test = automatic NOT MET.", source:"NIST SP 800-171A"},
+    {front:"Level 1 Award Requirement", back:"Level 1 requires FINAL certification status for contract award. No conditional status allowed — unlike Levels 2 and 3.", source:"32 CFR 170.21"},
+    {front:"COPC Five Principles", back:"Professionalism, Objectivity, Confidentiality, Proper Use of Methods, Information Integrity.", source:"Code of Professional Conduct"}
+];
+
+const matchTerms = [
+    {term:"NARA", def:"CUI Executive Agent"},
+    {term:"72 hours", def:"Cyber incident reporting deadline"},
+    {term:"110", def:"NIST SP 800-171 practices (Level 2)"},
+    {term:"17", def:"CMMC Level 1 practices"},
+    {term:"180 days", def:"Max conditional certification duration"},
+    {term:"C3PAO", def:"Conducts Level 2 assessments"},
+    {term:"SPRS", def:"Where self-assessment scores are posted"},
+    {term:"FedRAMP Moderate", def:"Cloud requirement for CUI storage"}
+];
+
+const practiceScenarios = [
+    {scenario:"An employee leaves the company but their account remains active for 3 weeks.", practice:"AC.L1-3.1.1", name:"Authorized Access Control", options:["AC.L1-3.1.1 – Authorized Access Control","IA.L1-3.5.1 – Identification","PE.L1-3.10.1 – Limit Physical Access","SI.L1-3.14.1 – Flaw Remediation"], correct:0, explanation:"This violates limiting system access to authorized users. Former employees are no longer authorized."},
+    {scenario:"Old hard drives containing contract data are thrown in a dumpster without being wiped.", practice:"MP.L1-3.8.3", name:"Media Disposal", options:["SC.L1-3.13.1 – Boundary Protection","MP.L1-3.8.3 – Media Disposal","PE.L1-3.10.5 – Manage Physical Access","AC.L1-3.1.22 – Control Public Information"], correct:1, explanation:"Media containing FCI must be sanitized or destroyed before disposal or reuse."},
+    {scenario:"A visitor wanders into the server room unescorted and takes photos.", practice:"PE.L1-3.10.3", name:"Escort Visitors", options:["PE.L1-3.10.1 – Limit Physical Access","PE.L1-3.10.4 – Physical Access Logs","PE.L1-3.10.3 – Escort Visitors","AC.L1-3.1.20 – External Connections"], correct:2, explanation:"Visitors must be escorted and their activity monitored at all times."},
+    {scenario:"The company's antivirus definitions haven't been updated in 6 months.", practice:"SI.L1-3.14.4", name:"Update Malicious Code Protection", options:["SI.L1-3.14.1 – Flaw Remediation","SI.L1-3.14.2 – Malicious Code Protection","SI.L1-3.14.5 – System & File Scanning","SI.L1-3.14.4 – Update Malicious Code Protection"], correct:3, explanation:"Malicious code protection mechanisms must be updated when new releases are available."},
+    {scenario:"Contract details are accidentally posted on the company's public website.", practice:"AC.L1-3.1.22", name:"Control Public Information", options:["AC.L1-3.1.2 – Transaction & Function Control","SC.L1-3.13.5 – Public-Access System Separation","AC.L1-3.1.22 – Control Public Information","AC.L1-3.1.20 – External Connections"], correct:2, explanation:"Information posted on publicly accessible systems must be controlled to prevent FCI exposure."},
+    {scenario:"Users can access the system with just a username — no password required.", practice:"IA.L1-3.5.2", name:"Authentication", options:["IA.L1-3.5.1 – Identification","IA.L1-3.5.2 – Authentication","AC.L1-3.1.1 – Authorized Access Control","AC.L1-3.1.2 – Transaction & Function Control"], correct:1, explanation:"Users must be authenticated (identity verified) before accessing systems — identification alone isn't enough."}
+];
+
+const ethicsScenarios = [
+    {scenario:"After an assessment, the OSC asks you to recommend specific security products.", question:"What should you do?", options:["Provide recommendations — assessment is done","Decline — assessors cannot give implementation advice","Refer to your C3PAO's consulting team","Give general guidance only"], correct:1, principle:"Objectivity", explanation:"C3PAOs and assessors cannot provide consulting or implementation support to OSCs they assess."},
+    {scenario:"You consulted for an OSC 8 months ago. Your C3PAO assigns you to their assessment.", question:"Appropriate action?", options:["Proceed — you don't work there anymore","Disclose and let Lead Assessor decide","Recuse yourself entirely","Only assess practices you didn't implement"], correct:2, principle:"Objectivity", explanation:"Prior consulting creates a conflict of interest. You cannot assess an OSC you helped prepare."},
+    {scenario:"A colleague posts: 'Company XYZ just got Level 2 certified!' on LinkedIn.", question:"COPC violation?", options:["No — assessment is complete","No — if they got permission","Yes — violates confidentiality","Only if they shared scores"], correct:2, principle:"Confidentiality", explanation:"Assessment results including OSC identity are confidential, even positive outcomes."},
+    {scenario:"An OSC offers a bonus if assessment finishes early AND they achieve certification.", question:"How to handle?", options:["Accept if timeline is feasible","Decline bonus, try to meet timeline","Decline — contingent payments create conflicts","Accept timeline bonus only"], correct:2, principle:"Objectivity", explanation:"Payment contingent on certification undermines objectivity. Guarantees of results are prohibited."},
+    {scenario:"You notice a fellow assessor coaching an OSC employee on what to say during interviews.", question:"What should you do?", options:["Ignore it — not your business","Privately ask the assessor to stop","Report it through proper channels","Wait and see if it affects results"], correct:2, principle:"Information Integrity", explanation:"Coaching false or misleading information violates COPC. Potential violations should be reported."}
+];
+
+const capSteps = [
+    {id:1, text:"Define assessment scope and CMMC level", phase:"Phase 1"},
+    {id:2, text:"Conduct Readiness Review (CA-RR)", phase:"Phase 1"},
+    {id:3, text:"Examine evidence and conduct interviews", phase:"Phase 2"},
+    {id:4, text:"Score practices (MET/NOT MET/N/A)", phase:"Phase 2"},
+    {id:5, text:"Final Findings Briefing with OSC", phase:"Phase 3"},
+    {id:6, text:"Submit results to CMMC eMASS", phase:"Phase 3"},
+    {id:7, text:"POA&M remediation (if conditional)", phase:"Phase 4"},
+    {id:8, text:"Close-out assessment and convert to Final", phase:"Phase 4"}
+];
+
+const assetSortItems = [
+    {name:"Workstation processing CUI", scope:"in", category:"CUI Asset"},
+    {name:"Firewall protecting CUI network", scope:"in", category:"Security Protection"},
+    {name:"Guest WiFi network (isolated)", scope:"out", category:"Out of Scope"},
+    {name:"CNC machine on production floor", scope:"in", category:"Specialized Asset"},
+    {name:"SIEM system (no CUI)", scope:"in", category:"Security Protection"},
+    {name:"HR laptop (policy prohibits CUI)", scope:"in", category:"Contractor Risk Managed"},
+    {name:"Personal phone on guest network", scope:"out", category:"Out of Scope"},
+    {name:"Government-furnished test equipment", scope:"in", category:"Specialized Asset"},
+    {name:"Email server transmitting CUI", scope:"in", category:"CUI Asset"},
+    {name:"Separate corporate network (no connection)", scope:"out", category:"Out of Scope"}
+];
+
+const quizQuestions = [
+    {q:"Who is the CUI Executive Agent?",opts:["DoD","DHS","NARA","OMB"],correct:2,expl:"NARA serves as Executive Agent per EO 13556."},
+    {q:"DFARS 252.204-7012 requires incident reporting within:",opts:["24 hours","48 hours","72 hours","7 days"],correct:2,expl:"Cyber incidents must be reported to DC3 within 72 hours."},
+    {q:"How many CMMC Level 1 practices?",opts:["15","17","20","110"],correct:1,expl:"17 practices from FAR 52.204-21's 15 requirements."},
+    {q:"Maximum conditional certification duration:",opts:["90 days","120 days","180 days","365 days"],correct:2,expl:"Conditional valid max 180 days for POA&M remediation."},
+    {q:"Which level requires FINAL status for award?",opts:["Level 1 only","Level 2 only","Levels 2 and 3","All levels"],correct:0,expl:"Level 1 requires FINAL. Levels 2/3 allow Conditional."},
+    {q:"Assessment methods include all EXCEPT:",opts:["Examine","Interview","Test","Audit"],correct:3,expl:"Three methods: Examine, Interview, Test."},
+    {q:"Failed test during assessment results in:",opts:["POA&M item","Automatic NOT MET","Retry opportunity","Lead Assessor discretion"],correct:1,expl:"Failed test = automatic NOT MET for that practice."},
+    {q:"CUI Specified is marked with:",opts:["SECRET prefix","SP- prefix","CUI-S prefix","No special marking"],correct:1,expl:"CUI Specified uses SP- prefix (e.g., SP-EXPT)."},
+    {q:"Security Protection Assets are:",opts:["Out of scope","In scope, not assessed","In scope, assessed","Only assessed if processing CUI"],correct:2,expl:"In scope and assessed against applicable practices."},
+    {q:"Who maintains the CUI Registry?",opts:["DoD","Cyber AB","NARA","NIST"],correct:2,expl:"NARA maintains the authoritative CUI Registry."},
+    {q:"Can a C3PAO guarantee certification?",opts:["Yes with conditions","Yes if qualified","No — prohibited","Only for Level 1"],correct:2,expl:"COPC prohibits guarantees of assessment results."},
+    {q:"Contractor Risk Managed Assets:",opts:["Out of scope","Fully assessed","Reviewed in SSP only","Cannot exist on same network"],correct:2,expl:"In scope but reviewed per CA.L2-3.12.4, not fully assessed."},
+    {q:"Where are self-assessment scores posted?",opts:["eMASS","SPRS","FedRAMP","Marketplace"],correct:1,expl:"SPRS (Supplier Performance Risk System)."},
+    {q:"CCP can lead Level 2 assessments:",opts:["True","False"],correct:1,expl:"CCP can participate but cannot lead. CCA leads Level 2."},
+    {q:"Cloud providers storing CUI must meet:",opts:["FedRAMP Low","FedRAMP Moderate","FedRAMP High","No requirement"],correct:1,expl:"FedRAMP Moderate (or equivalent) per DFARS 252.204-7012."}
+];
+
+// ========================
+// STATE
+// ========================
+let mode = 'Home';
+let flash = {idx:0, flipped:false, known:[], unknown:[]};
+let match = {selected:null, matched:[], wrong:null};
+let practice = {idx:0, answered:false, score:0};
+let ethics = {idx:0, answered:false, score:0};
+let capOrder = {items:[], checked:false};
+let assetSort = {items:[], inScope:[], outScope:[], checked:false};
+let quiz = {qs:[], idx:0, score:0, answered:false, done:false, timer:null, time:0};
+
+// ========================
+// RENDER
+// ========================
+function render() {
+    document.getElementById('nav').innerHTML = MODES.map(m => 
+        `<button class="${m===mode?'active':''}" onclick="setMode('${m}')">${m}</button>`
+    ).join('');
+    const c = document.getElementById('content');
+    switch(mode) {
+        case 'Home': renderHome(c); break;
+        case 'Flashcards': renderFlashcards(c); break;
+        case 'Matching': renderMatching(c); break;
+        case 'Practices': renderPractices(c); break;
+        case 'Ethics': renderEthics(c); break;
+        case 'CAP Order': renderCAPOrder(c); break;
+        case 'Scoping': renderScoping(c); break;
+        case 'Quiz': renderQuiz(c); break;
+    }
+}
+
+function setMode(m) {
+    if(quiz.timer) clearInterval(quiz.timer);
+    mode = m;
+    if(m==='Flashcards') flash = {idx:0, flipped:false, known:[], unknown:[]};
+    if(m==='Matching') { match = {selected:null, matched:[], wrong:null}; }
+    if(m==='Practices') practice = {idx:0, answered:false, score:0};
+    if(m==='Ethics') ethics = {idx:0, answered:false, score:0};
+    if(m==='CAP Order') capOrder = {items: shuffle([...capSteps]), checked:false};
+    if(m==='Scoping') assetSort = {items: shuffle([...assetSortItems]).slice(0,6), inScope:[], outScope:[], checked:false};
+    if(m==='Quiz') quiz = {qs: shuffle([...quizQuestions]).slice(0,10), idx:0, score:0, answered:false, done:false, timer:null, time:90};
+    render();
+}
+
+// HOME
+function renderHome(c) {
+    c.innerHTML = `
+        <div class="text-center" style="padding:25px 0;">
+            <h2 style="font-size:1.4rem;margin-bottom:8px;">Master the CCP Exam</h2>
+            <p style="color:var(--dim);margin-bottom:25px;max-width:450px;margin-left:auto;margin-right:auto;">
+                Interactive flashcards, matching games, scenario practice, and timed quizzes.
+            </p>
+            <div class="btn-row">
+                <button class="btn" onclick="setMode('Flashcards')">📇 Flashcards</button>
+                <button class="btn btn-secondary" onclick="setMode('Quiz')">⏱️ Timed Quiz</button>
+            </div>
+            <div class="stats-row" style="margin-top:30px;">
+                <div class="stat"><div class="stat-value">170</div><div class="stat-label">Exam Questions</div></div>
+                <div class="stat"><div class="stat-value">6</div><div class="stat-label">Domains</div></div>
+                <div class="stat"><div class="stat-value">17</div><div class="stat-label">L1 Practices</div></div>
+            </div>
+        </div>`;
+}
+
+// FLASHCARDS
+function renderFlashcards(c) {
+    if(flash.idx >= flashcards.length) {
+        c.innerHTML = `
+            <div class="text-center" style="padding:30px 0;">
+                <h2>Deck Complete!</h2>
+                <div class="stats-row">
+                    <div class="stat"><div class="stat-value" style="color:var(--green);">${flash.known.length}</div><div class="stat-label">Knew It</div></div>
+                    <div class="stat"><div class="stat-value" style="color:var(--red);">${flash.unknown.length}</div><div class="stat-label">Review Again</div></div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn" onclick="setMode('Flashcards')">Start Over</button>
+                    ${flash.unknown.length > 0 ? `<button class="btn btn-secondary" onclick="reviewMissed()">Review Missed</button>` : ''}
+                </div>
+            </div>`;
+        return;
+    }
+    const card = flashcards[flash.idx];
+    c.innerHTML = `
+        <div class="mode-header"><span class="icon">📇</span> Flashcards</div>
+        <div class="flashcard-progress">Card ${flash.idx + 1} of ${flashcards.length}</div>
+        <div class="flashcard-container">
+            <div class="flashcard ${flash.flipped ? 'flipped' : ''}" onclick="flipCard()">
+                <div class="flashcard-face flashcard-front">
+                    <h3>${card.front}</h3>
+                    <div class="hint">Click to flip</div>
+                </div>
+                <div class="flashcard-face flashcard-back">
+                    <p>${card.back}</p>
+                    <div class="source">${card.source}</div>
+                </div>
+            </div>
+        </div>
+        <div class="flashcard-controls">
+            <button class="btn dunno-btn" onclick="markCard(false)">❌ Review Again</button>
+            <button class="btn know-btn" onclick="markCard(true)">✓ Got It</button>
+        </div>`;
+}
+
+function flipCard() { flash.flipped = !flash.flipped; render(); }
+function markCard(known) {
+    if(known) flash.known.push(flash.idx);
+    else flash.unknown.push(flash.idx);
+    flash.idx++;
+    flash.flipped = false;
+    render();
+}
+function reviewMissed() {
+    const missedCards = flash.unknown.map(i => flashcards[i]);
+    flashcards.length = 0;
+    flashcards.push(...missedCards);
+    flash = {idx:0, flipped:false, known:[], unknown:[]};
+    render();
+}
+
+// MATCHING
+function renderMatching(c) {
+    const shuffledDefs = shuffle(matchTerms.map(m => m.def));
+    if(match.matched.length === matchTerms.length) {
+        c.innerHTML = `
+            <div class="text-center" style="padding:30px 0;">
+                <h2 style="color:var(--green);">All Matched! 🎉</h2>
+                <p style="color:var(--dim);margin:15px 0;">You matched all ${matchTerms.length} pairs correctly.</p>
+                <button class="btn" onclick="setMode('Matching')">Play Again</button>
+            </div>`;
+        return;
+    }
+    c.innerHTML = `
+        <div class="mode-header"><span class="icon">🔗</span> Match Terms</div>
+        <div class="match-score">Matched: ${match.matched.length} / ${matchTerms.length}</div>
+        <div class="match-container">
+            <div class="match-column">
+                <h4>Terms</h4>
+                ${matchTerms.map((m,i) => `
+                    <div class="match-item ${match.matched.includes(i)?'matched':''} ${match.selected===i?'selected':''} ${match.wrong===i?'wrong':''}" 
+                         onclick="selectTerm(${i})" data-type="term" data-idx="${i}">
+                        ${m.term}
+                    </div>`).join('')}
+            </div>
+            <div class="match-column">
+                <h4>Definitions</h4>
+                ${matchTerms.map((m,i) => `
+                    <div class="match-item ${match.matched.includes(i)?'matched':''}" 
+                         onclick="selectDef(${i})" data-type="def" data-idx="${i}">
+                        ${m.def}
+                    </div>`).join('')}
+            </div>
+        </div>`;
+}
+
+function selectTerm(i) {
+    if(match.matched.includes(i)) return;
+    match.selected = i;
+    match.wrong = null;
+    render();
+}
+
+function selectDef(i) {
+    if(match.selected === null || match.matched.includes(i)) return;
+    if(match.selected === i) {
+        match.matched.push(i);
+        match.selected = null;
+    } else {
+        match.wrong = match.selected;
+        setTimeout(() => { match.wrong = null; match.selected = null; render(); }, 500);
+    }
+    render();
+}
+
+// PRACTICES
+function renderPractices(c) {
+    if(practice.idx >= practiceScenarios.length) {
+        const pct = Math.round((practice.score / practiceScenarios.length) * 100);
+        c.innerHTML = `
+            <div class="text-center" style="padding:30px 0;">
+                <h2>Practice Complete!</h2>
+                <div class="score-big ${pct >= 70 ? 'pass' : 'fail'}">${pct}%</div>
+                <p style="color:var(--dim);">${practice.score} of ${practiceScenarios.length} correct</p>
+                <button class="btn" onclick="setMode('Practices')" style="margin-top:20px;">Try Again</button>
+            </div>`;
+        return;
+    }
+    const s = practiceScenarios[practice.idx];
+    c.innerHTML = `
+        <div class="mode-header"><span class="icon">🛡️</span> Which Practice Applies?</div>
+        <div class="progress"><div class="progress-fill" style="width:${(practice.idx/practiceScenarios.length)*100}%"></div></div>
+        <div class="scenario-box">
+            <div class="scenario-label">Scenario ${practice.idx + 1} of ${practiceScenarios.length}</div>
+            <p class="scenario-text">${s.scenario}</p>
+        </div>
+        <p style="margin-bottom:12px;font-weight:500;">Which CMMC Level 1 practice addresses this?</p>
+        <div class="options">${s.options.map((o,i) => `
+            <div class="option ${practice.answered?'disabled':''} ${practice.answered&&i===s.correct?'correct':''} ${practice.answered&&practice.sel===i&&i!==s.correct?'incorrect':''}" 
+                 onclick="${practice.answered?'':`pickPractice(${i})`}">
+                <span class="option-letter">${String.fromCharCode(65+i)}</span>
+                <span>${o}</span>
+            </div>`).join('')}
+        </div>
+        ${practice.answered ? `<div class="explanation"><h4>${s.name}</h4><p>${s.explanation}</p></div>
+            <div class="btn-row"><button class="btn" onclick="nextPractice()">Next</button></div>` : ''}`;
+}
+
+function pickPractice(i) {
+    if(practice.answered) return;
+    practice.answered = true;
+    practice.sel = i;
+    if(i === practiceScenarios[practice.idx].correct) practice.score++;
+    render();
+}
+
+function nextPractice() {
+    practice.idx++;
+    practice.answered = false;
+    practice.sel = null;
+    render();
+}
+
+// ETHICS
+function renderEthics(c) {
+    if(ethics.idx >= ethicsScenarios.length) {
+        const pct = Math.round((ethics.score / ethicsScenarios.length) * 100);
+        c.innerHTML = `
+            <div class="text-center" style="padding:30px 0;">
+                <h2>Ethics Complete!</h2>
+                <div class="score-big ${pct >= 70 ? 'pass' : 'fail'}">${pct}%</div>
+                <p style="color:var(--dim);">${ethics.score} of ${ethicsScenarios.length} correct</p>
+                <button class="btn" onclick="setMode('Ethics')" style="margin-top:20px;">Try Again</button>
+            </div>`;
+        return;
+    }
+    const s = ethicsScenarios[ethics.idx];
+    c.innerHTML = `
+        <div class="mode-header"><span class="icon">⚖️</span> COPC Ethics Scenarios</div>
+        <div class="progress"><div class="progress-fill" style="width:${(ethics.idx/ethicsScenarios.length)*100}%"></div></div>
+        <div class="scenario-box">
+            <div class="scenario-label">Scenario ${ethics.idx + 1}</div>
+            <p class="scenario-text">${s.scenario}</p>
+        </div>
+        <p style="margin-bottom:12px;font-weight:500;">${s.question}</p>
+        <div class="options">${s.options.map((o,i) => `
+            <div class="option ${ethics.answered?'disabled':''} ${ethics.answered&&i===s.correct?'correct':''} ${ethics.answered&&ethics.sel===i&&i!==s.correct?'incorrect':''}" 
+                 onclick="${ethics.answered?'':`pickEthics(${i})`}">
+                <span class="option-letter">${String.fromCharCode(65+i)}</span>
+                <span>${o}</span>
+            </div>`).join('')}
+        </div>
+        ${ethics.answered ? `<div class="explanation"><h4>Principle: ${s.principle}</h4><p>${s.explanation}</p></div>
+            <div class="btn-row"><button class="btn" onclick="nextEthics()">Next</button></div>` : ''}`;
+}
+
+function pickEthics(i) {
+    if(ethics.answered) return;
+    ethics.answered = true;
+    ethics.sel = i;
+    if(i === ethicsScenarios[ethics.idx].correct) ethics.score++;
+    render();
+}
+
+function nextEthics() {
+    ethics.idx++;
+    ethics.answered = false;
+    ethics.sel = null;
+    render();
+}
+
+// CAP ORDER
+function renderCAPOrder(c) {
+    if(capOrder.checked) {
+        let correct = 0;
+        capOrder.items.forEach((item, i) => { if(item.id === i + 1) correct++; });
+        c.innerHTML = `
+            <div class="mode-header"><span class="icon">📋</span> CAP Phase Order — Results</div>
+            <div class="order-list">${capOrder.items.map((item, i) => `
+                <div class="order-item ${item.id === i + 1 ? 'correct' : 'wrong'}">
+                    <span class="num">${i + 1}</span>
+                    <span>${item.text}</span>
+                    <span style="margin-left:auto;font-size:0.75rem;color:var(--muted);">${item.phase}</span>
+                </div>`).join('')}
+            </div>
+            <p class="text-center" style="color:var(--dim);margin:15px 0;">${correct} of ${capSteps.length} in correct position</p>
+            <div class="btn-row"><button class="btn" onclick="setMode('CAP Order')">Try Again</button></div>`;
+        return;
+    }
+    c.innerHTML = `
+        <div class="mode-header"><span class="icon">📋</span> Put CAP Steps in Order</div>
+        <p style="color:var(--dim);margin-bottom:15px;text-align:center;">Drag to reorder the assessment process steps</p>
+        <div class="order-list" id="orderList">${capOrder.items.map((item, i) => `
+            <div class="order-item" draggable="true" data-idx="${i}">
+                <span class="num">${i + 1}</span>
+                <span>${item.text}</span>
+            </div>`).join('')}
+        </div>
+        <div class="btn-row"><button class="btn" onclick="checkCAPOrder()">Check Order</button></div>`;
+    
+    setTimeout(() => {
+        const list = document.getElementById('orderList');
+        let dragIdx = null;
+        list.querySelectorAll('.order-item').forEach((el, i) => {
+            el.addEventListener('dragstart', () => { dragIdx = i; el.classList.add('dragging'); });
+            el.addEventListener('dragend', () => { el.classList.remove('dragging'); });
+            el.addEventListener('dragover', (e) => { e.preventDefault(); });
+            el.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if(dragIdx !== null && dragIdx !== i) {
+                    const temp = capOrder.items[dragIdx];
+                    capOrder.items.splice(dragIdx, 1);
+                    capOrder.items.splice(i, 0, temp);
+                    render();
+                }
+            });
+        });
+    }, 0);
+}
+
+function checkCAPOrder() {
+    capOrder.checked = true;
+    render();
+}
+
+// SCOPING
+function renderScoping(c) {
+    if(assetSort.checked) {
+        let correct = 0;
+        assetSort.inScope.forEach(item => { if(item.scope === 'in') correct++; });
+        assetSort.outScope.forEach(item => { if(item.scope === 'out') correct++; });
+        c.innerHTML = `
+            <div class="mode-header"><span class="icon">🎯</span> Asset Scoping — Results</div>
+            <div class="sort-container">
+                <div class="sort-zone in-scope">
+                    <h4>✓ In Scope</h4>
+                    ${assetSort.inScope.map(item => `
+                        <div class="asset-item ${item.scope === 'in' ? 'correct' : 'wrong'}">
+                            ${item.name} <span style="float:right;font-size:0.7rem;color:var(--muted);">${item.category}</span>
+                        </div>`).join('')}
+                </div>
+                <div class="sort-zone out-scope">
+                    <h4>✗ Out of Scope</h4>
+                    ${assetSort.outScope.map(item => `
+                        <div class="asset-item ${item.scope === 'out' ? 'correct' : 'wrong'}">
+                            ${item.name} <span style="float:right;font-size:0.7rem;color:var(--muted);">${item.category}</span>
+                        </div>`).join('')}
+                </div>
+            </div>
+            <p class="text-center" style="color:var(--dim);">${correct} of ${assetSort.inScope.length + assetSort.outScope.length} sorted correctly</p>
+            <div class="btn-row"><button class="btn" onclick="setMode('Scoping')">Try Again</button></div>`;
+        return;
+    }
+    c.innerHTML = `
+        <div class="mode-header"><span class="icon">🎯</span> Sort Assets: In Scope or Out?</div>
+        <p style="color:var(--dim);margin-bottom:15px;text-align:center;">Drag each asset to the correct zone</p>
+        <div class="asset-pool" id="assetPool">
+            <h4>Assets to Sort</h4>
+            ${assetSort.items.map((item, i) => `
+                <div class="asset-item" draggable="true" data-idx="${i}">${item.name}</div>`).join('')}
+        </div>
+        <div class="sort-container">
+            <div class="sort-zone in-scope" id="inScopeZone">
+                <h4>In Scope</h4>
+                ${assetSort.inScope.map(item => `<div class="asset-item">${item.name}</div>`).join('')}
+            </div>
+            <div class="sort-zone out-scope" id="outScopeZone">
+                <h4>Out of Scope</h4>
+                ${assetSort.outScope.map(item => `<div class="asset-item">${item.name}</div>`).join('')}
+            </div>
+        </div>
+        <div class="btn-row"><button class="btn" onclick="checkScoping()" ${assetSort.items.length > 0 ? 'disabled' : ''}>Check Answers</button></div>`;
+    
+    setTimeout(() => {
+        const pool = document.getElementById('assetPool');
+        const inZone = document.getElementById('inScopeZone');
+        const outZone = document.getElementById('outScopeZone');
+        let dragItem = null;
+        
+        pool.querySelectorAll('.asset-item').forEach((el, i) => {
+            el.addEventListener('dragstart', () => { dragItem = assetSort.items[i]; el.classList.add('dragging'); });
+            el.addEventListener('dragend', () => { el.classList.remove('dragging'); });
+        });
+        
+        [inZone, outZone].forEach(zone => {
+            zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+            zone.addEventListener('dragleave', () => { zone.classList.remove('drag-over'); });
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                if(dragItem) {
+                    const idx = assetSort.items.indexOf(dragItem);
+                    if(idx > -1) {
+                        assetSort.items.splice(idx, 1);
+                        if(zone.id === 'inScopeZone') assetSort.inScope.push(dragItem);
+                        else assetSort.outScope.push(dragItem);
+                        render();
+                    }
+                }
+            });
+        });
+    }, 0);
+}
+
+function checkScoping() {
+    assetSort.checked = true;
+    render();
+}
+
+// QUIZ
+function renderQuiz(c) {
+    if(quiz.done) {
+        const pct = Math.round((quiz.score / quiz.qs.length) * 100);
+        c.innerHTML = `
+            <div class="text-center" style="padding:25px 0;">
+                <h2>Quiz Complete!</h2>
+                <div class="score-big ${pct >= 70 ? 'pass' : 'fail'}">${pct}%</div>
+                <p style="color:var(--dim);">${quiz.score} of ${quiz.qs.length} correct</p>
+                <p style="color:var(--muted);font-size:0.85rem;margin-top:5px;">${quiz.time > 0 ? `Finished with ${quiz.time}s remaining` : 'Time expired'}</p>
+                <div class="btn-row" style="margin-top:25px;">
+                    <button class="btn" onclick="setMode('Quiz')">Try Again</button>
+                    <button class="btn btn-secondary" onclick="setMode('Flashcards')">Study More</button>
+                </div>
+            </div>`;
+        return;
+    }
+    
+    if(!quiz.timer && quiz.time > 0) {
+        quiz.timer = setInterval(() => {
+            quiz.time--;
+            if(quiz.time <= 0) {
+                clearInterval(quiz.timer);
+                quiz.done = true;
+                render();
+            } else {
+                document.getElementById('timer').textContent = formatTime(quiz.time);
+                document.getElementById('timer').className = 'timer' + (quiz.time <= 30 ? ' danger' : quiz.time <= 60 ? ' warning' : '');
+            }
+        }, 1000);
+    }
+    
+    const q = quiz.qs[quiz.idx];
+    c.innerHTML = `
+        <div class="mode-header"><span class="icon">⏱️</span> Timed Quiz</div>
+        <div class="timer" id="timer">${formatTime(quiz.time)}</div>
+        <div class="progress"><div class="progress-fill" style="width:${(quiz.idx/quiz.qs.length)*100}%"></div></div>
+        <p style="text-align:center;color:var(--muted);font-size:0.8rem;margin-bottom:15px;">Question ${quiz.idx + 1} of ${quiz.qs.length}</p>
+        <p style="font-size:1rem;font-weight:500;margin-bottom:18px;">${q.q}</p>
+        <div class="options">${q.opts.map((o,i) => `
+            <div class="option ${quiz.answered?'disabled':''} ${quiz.answered&&i===q.correct?'correct':''} ${quiz.answered&&quiz.sel===i&&i!==q.correct?'incorrect':''}" 
+                 onclick="${quiz.answered?'':`pickQuiz(${i})`}">
+                <span class="option-letter">${String.fromCharCode(65+i)}</span>
+                <span>${o}</span>
+            </div>`).join('')}
+        </div>
+        ${quiz.answered ? `<div class="explanation"><h4>Explanation</h4><p>${q.expl}</p></div>
+            <div class="btn-row"><button class="btn" onclick="nextQuiz()">${quiz.idx === quiz.qs.length - 1 ? 'See Results' : 'Next'}</button></div>` : ''}`;
+}
+
+function pickQuiz(i) {
+    if(quiz.answered) return;
+    quiz.answered = true;
+    quiz.sel = i;
+    if(i === quiz.qs[quiz.idx].correct) quiz.score++;
+    render();
+}
+
+function nextQuiz() {
+    if(quiz.idx === quiz.qs.length - 1) {
+        clearInterval(quiz.timer);
+        quiz.done = true;
+    } else {
+        quiz.idx++;
+        quiz.answered = false;
+        quiz.sel = null;
+    }
+    render();
+}
+
+function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+function shuffle(arr) {
+    for(let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+render();
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+}
+</script>
+</body>
+</html>
